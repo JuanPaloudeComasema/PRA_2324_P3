@@ -21,8 +21,9 @@ class HashTable: public Dict<V> {
         for (char c : key) {
             sum += static_cast<int>(c);
         }
-        return sum % max;
-    }
+        return sum;
+       	}
+
 
     public:
         // ...
@@ -43,13 +44,50 @@ class HashTable: public Dict<V> {
         return out;
     }
 	   V operator[](std::string key){
-        	int index = h(key);
-        	for (auto &entry : table[index]) {
-            	if (entry.key == key) {
-                	return entry.value;
-            		}
-        	}
-        	throw std::runtime_error("Key not found");
-    	}	
+        int index = h(key);
+        for (auto &entry : table[index]) {
+            if (entry.key == key) {
+                return entry.value;
+            }
+        }
+        throw std::runtime_error("Key not found");
+    }
+
+	   void insert(std::string key, V value){
+		int index = h(key);
+		/*for (auto &entry : table[index]) {
+        		if (entry.key == key) {
+            			throw std::runtime_error("Key already exists");
+        		}
+    		}*/
+		if(table.search(key) != -1){
+			throw std::runtime_error("LLave ya existente");
+		}
+		table.insert(index, value);
+		n++;
+	   }
+
+	   V search(std::string key){
+		   int index = h(key);
+		   if(table.get(index) == nullptr){
+			   throw std::runtime_error("LA llave no se encuentra en la tabla");
+		   }
+		   return table.get(index);
+	   }
+
+	   V remove(std::string key){
+		   if(table.search(key) == -1){
+                        throw std::runtime_error("LLave no existente");
+                }
+		   int index = h(key);
+		table.remove(index);
+		n--;
+	   }
+
+	   int entries(){
+		   return n;
+	   }
+
+				
 };
 #endif
