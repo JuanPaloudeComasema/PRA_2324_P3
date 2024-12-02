@@ -45,42 +45,46 @@ class HashTable: public Dict<V> {
     }
 	   V operator[](std::string key){
         int index = h(key);
-        for (auto &entry : table[index]) {
+	TableEntry<V> Tar = TableEntry<V>(key);
+       /* for (auto &entry : table[index]) {
             if (entry.key == key) {
                 return entry.value;
             }
-        }
-        throw std::runtime_error("Key not found");
+        }*/
+	if(table->search(index) == -1){
+        	throw std::runtime_error("Key not found");
+	}
+	return table->search(Tar);
     }
 
 	   void insert(std::string key, V value){
 		int index = h(key);
+		TableEntry<V> Tar = TableEntry<V>(key, value);
 		/*for (auto &entry : table[index]) {
         		if (entry.key == key) {
             			throw std::runtime_error("Key already exists");
         		}
     		}*/
-		if(table.search(key) != -1){
+		if(table->search(Tar) != -1){
 			throw std::runtime_error("LLave ya existente");
 		}
-		table.insert(index, value);
+		table->insert(index, Tar);
 		n++;
 	   }
 
 	   V search(std::string key){
+		TableEntry<V> Tar = TableEntry<V>(key);
 		   int index = h(key);
-		   if(table.get(index) == nullptr){
-			   throw std::runtime_error("LA llave no se encuentra en la tabla");
-		   }
-		   return table.get(index);
+		   return table->get(index);
 	   }
 
 	   V remove(std::string key){
-		   if(table.search(key) == -1){
+		   TableEntry<V> Tar = TableEntry<V>(key);
+		   if(table->search(key) == -1){
                         throw std::runtime_error("LLave no existente");
                 }
 		   int index = h(key);
-		table.remove(index);
+		table->remove(index);
 		n--;
 	   }
 
