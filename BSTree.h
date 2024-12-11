@@ -2,147 +2,151 @@
 #define BSTREE_H
 
 #include <ostream>
-#include "BSNode.h"
 #include <stdexcept>
+#include "BSNode.h"
 
-template <typename T> 
-class BSTree {
-    private:
-        //miembros privados
-	int nelem;
-	BSNode<T> *root;
+using namespace std;
 
-	BSNode<T>* search(BSNode<T>* n, T e) const {
-		if(n == nullptr){
-			std::runtime_error("elemento no encontrado");
-		}
-		if(n->value == e){
-			return n;
-		}
-		if(e < n->elem){
-			return search(n->left, e);
-		}else{
-			return search(n->right, e);
-		}
-	}
-	BSNode<T>* insert(BSNode<T>* n, T e){
-		if(n == nullptr){
-			nelem++;
-			return new BSNode<T>(e);
-		}
-		if(n->elem == e){
-			throw std::runtime_error("Valor ya existente");
-		}
-		if(n->elem > e){
-			n->left = insert(n->left, e);
-		}
-		 if(n->elem < e){
-			n->right = insert(n->right, e);
-		}
-		 return n;
-	}
+template <typename T>
+class BSTree{
+ private:
+  int nelem;            //Número de elementos almacenados en el ABB
+  BSNode<T> *root;      //Nodo raíz del ABB
 
-	void print_inorder(std::ostream &out, BSNode<T>* n) const {
-		if(n == nullptr){
-			return;
-		}
-		print_inorder(out, n->left);
-		out << n->elem << " ";
-		print_inorder(out, n->right);	
-	}
+  //Método recursivo que busca el elemento "e" en el ABB (raíz del árbol (root) = n)
+  BSNode<T>* search(BSNode<T>* n, T e) const{
+    if(n == nullptr){                    //Si llegamos a un nodo nulo -> No está el elemento
+        throw runtime_error("Elemento no encontrado en el ABB");
+    } else if(n -> elem < e){            //Si "e" es mayor que n->elem, se busca hacia la derecha
+        return search(n -> right, e);
+    } else if(n -> elem > e){            //Si "e" es mayor que n->elem, se busca hacia la izquierda
+        return search(n -> left, e);
+    } else{
+        return n;                //Devuelve el Nodo donde se encuentra  elemento "e"
+    }
+  }
 
-	BSNode<T>* remove(BSNode<T>* n, T e){
-		 if (n == nullptr) {
-            throw std::runtime_error("Elemento no encontrado"); // Lanzar excepción si no se encuentra
-        }
-        if (e < n->elem) {
-            n->left = remove(n->left, e); // Buscar en el subárbol izquierdo
-        } else if (e > n->elem) {
-            n->right = remove(n->right, e); // Buscar en el subárbol derecho
-        } else {
-            // Nodo encontrado
-            if (n->left == nullptr) {
-                BSNode<T>* rightChild = n->right;
-                delete n;
-                nelem--;
-                return rightChild;
-            } else if (n->right == nullptr) {
-                BSNode<T>* leftChild = n->left;
-                delete n;
-                nelem--;
-                return leftChild;
-            } else {
-                // Nodo con dos hijos
-                T maxValue = max(n->left);
-                n->value = maxValue;
-                n->left = remove_max(n->left);
-            }
-        }
-        return n;
+  //Método recursivo que inserta el elemento "e" en el ABB
+  BSNode<T>* insert(BSNode<T>* n, T e){
+    if(n == nullptr){            //Al llegar al Nodo final, ya sea por derecha o izquierda, insertamos nuevo Nodo con el elemento "e"
+        nelem++;
+        return new BSNode<T>(e);
+    } else if(n -> elem == e){   //Si el elemento "e" ya se encuentra en el ABB, envío error
+        throw runtime_error("Elemento duplicado en el ABB");
+    } else if(n -> elem < e){    //Si "e" es mayor que n->elem vamos por la derecha
+        n -> right = insert(n -> right, e);
+    } else{                      //Si "e" es menor que n->elem vamos por la izquierda
+        n -> left = insert(n -> left, e);
     }
 
-	T max(BSNode<T>* n) const {
-		if(n->right == nullptr){
-			return n->elem;
-		}
-		return max(n->right);
+    return n;                   //Devuelve el Nodo raíz del Nodo donde se encuentra el elemento "e"
+  }
+
+  //Método recursivo para el recorrido inorden para mostrar a través de "out" los elementos del ABB
+  void print_inorder(ostream &out, BSNode<T>* n) const{
+    if(n != nullptr){
+      print_inorder(out, n -> left);    //Primero miramos izq
+      out << n -> elem << " ";          //Si ya no hay izq imprimimos el elem actual
+      print_inorder(out, n -> right);   //Una vez mirado izq e impreso actual miramos drch
+    }
+  }
+
+  //Método recursivo para la eliminación de elementos
+  BSNode<T>* remove(BSNode<T>* n, T e){
+    if(n == nullptr){
+        throw runtime_error("Elemento no encontrado en el ABB");
+    } else if(n -> elem < e){
+        n -> right = remove(n -> right, e);
+    } else if(n -> elem > e){
+        n -> left = remove(n -> left, e);
+    } else{
+        if(n -> left != nullptr && n -> right != nullptr){       //Tiene 2 descendientes (Tiene hijos tanto drch como izq)
+	    n -> elem = max(n -> left);
+	    n -> left = remove_max(n -> left);
+        } else{                                                  //Tiene 1 o 0 descendientes (No tiene drch o izq)
+	  if(n -> left != nullptr){
+	      n = n -> left;
+	  } else{
+	      n = n -> right;
+	  }
 	}
+    }
+    return n;
+  }
 
-	BSNode<T>* remove_max(BSNode<T>* n){
-		if(n->right == nullptr){
-			BSNode<T> *LeftChild = n->left;
-			delete n;
-			nelem--;
-			return LeftChild;
-		}
-		n->right = remove_max(n->right);
-		return n;
-	}
+  //Método recursivo que devuelve el elemento de máximo valor contenido en el (sub-)árbol cuya raíz es n
+  T max(BSNode<T>* n) const{
+    if(n == nullptr){
+        throw runtime_error("Elemento no encontrado en el ABB");
+    } else if(n -> right != nullptr){
+        return max(n -> right);
+    } else{
+      return n -> elem;
+    }
+  }
 
-	void delete_cascade(BSNode<T>* n){
-		if (n == nullptr) {
-            return; // Caso base: nodo nulo
-        }
-        delete_cascade(n->left); // Liberar subárbol izquierdo
-        delete_cascade(n->right); // Liberar subárbol derecho
-        delete n; // Eliminar nodo actual
-	}
+  //Método recursivo que elimina el elemento de máximo valor contenido en el (sub-)árbol cuya raíz es n
+  BSNode<T>* remove_max(BSNode<T>* n){
+    if(n -> right == nullptr){
+        return n -> left;
+    } else{
+        n -> right = remove_max(n -> right);
+        return n;
+    }
+  }
 
-    public:
-        // miembros públicos
-    	BSTree(): root(nullptr), nelem(0) {};
+  //Método recursivo para liberación de la memoria dinámica ocupada por los objetos de tipo BSNode<T> que conforman el (sub-)árbol cuya raíz es n
+  void delete_cascade(BSNode<T>* n){
+    if(n != nullptr){
+      delete_cascade(n -> left);
+      delete_cascade(n -> right);
+      delete n;
+    }
+  }
+  
+ public:
+  
+  BSTree(){             //Crea un ABB vacío
+    nelem = 0;
+    root = nullptr;
+  }
 
-	int size() const {
-		return nelem;
-	}
+  int size() const{     //Devuelve el número de elementos del ABB
+    return nelem;
+  }
 
-	T search(T e) const {
-		BSNode<T> *result = search(root, e);
+  //Función lanzadera (Simplemente llama a la función que busca el elemento)
+  T search(T e) const{
+    return search(root, e) -> elem; //La función search privada devuelve el Nodo donde se encuentra "e", por eso, de esa función nos tenemos que quedar con el elemento (que será "e" si se ha encontrado)
+  }
 
-		return result->value;
-	}
+  //Función que actúa como interfaz al método search(T e), una manera más cómoda de llamarla
+  T operator[](T e) const{
+    return search(e);
+  }
 
-	T operator[](T e) const{
-		return search(e);
-	}
+  //Función lanzadera (Simplemente llama a la función que inserta el elemento "e")
+  void insert(T e){
+    root = insert(root, e);
+  }
 
-	void insert(T e){
-		return insert(root, e);
-	}
+  //Sobrecarga del operador << para mostrar a través de "out" los contenidos del ABB realizando recorrido inorden
+  friend ostream& operator<<(ostream &out, const BSTree<T> &bst){
+    bst.print_inorder(out, bst.root);
+    return out;
+  }
 
-	friend std::ostream& operator<<(std::ostream &out, const BSTree<T> &bst){
-		bst.print_inorder(out);
-		return out;
-	}
+  //Función lanzadera (Llama a la función para eliminar un elemento)
+  void remove(T e){
+    root = remove(root, e);
+    nelem--;
+  }
 
-	void remove(T e){
-		root = remove(root, e);
-	}
-
-	~BSTree(){
-		delete_cascade(root);
-	}
-
+  //Método destructor
+  ~BSTree(){
+    delete_cascade(root);
+  }
+  
 };
 
 #endif
